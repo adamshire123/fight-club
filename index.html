@@ -1,32 +1,25 @@
 <html>
 <head>
   <script src="js/md5.min.js"></script>
-  <script type="text/javascript" src="js/fight.js"></script
+
 </head>
 <body>
 
-  <h1>Fight-Club</h1>
+  <h1>Which is better?</h1>
 
   <form method="post" onsubmit="fight(); return false">
 <input type="text" id="opponent_1">
-vs.
+<span>or</span>
 <input type="text" id="opponent_2">
-<input type="submit" value="Fight!">
+<input type="submit" value="submit">
   </form>
 
+<div id="results">
+
+</div>
+
   <script src="https://www.gstatic.com/firebasejs/4.9.0/firebase.js"></script>
-  <script>
-    // Initialize Firebase
-    var config = {
-      apiKey: "AIzaSyDcJlrD52RBfaTEu7uBaP5L65mEvPVP_S4",
-      authDomain: "fight-club-9c546.firebaseapp.com",
-      databaseURL: "https://fight-club-9c546.firebaseio.com",
-      projectId: "fight-club-9c546",
-      storageBucket: "fight-club-9c546.appspot.com",
-      messagingSenderId: "292548148013"
-    };
-    firebase.initializeApp(config);
-  </script>
+  <script type="text/javascript" src="js/fight.js"></script>
 
 </body>
 

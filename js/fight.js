@@ -21,12 +21,10 @@ function Contest(opponent_1, opponent_2)  {
       let contestResults;
       let timestamp = firebase.database.ServerValue.TIMESTAMP
       if (this.opponent_1 === this.opponent_2) {
-         contestResults = 'tie'
-       } else if (md5(this.opponent_1) > md5(this.opponent_2)) {
-         contestResults = {'winner':this.opponent_1, 'loser':this.opponent_2, 'timestamp':timestamp}
-       } else {
-         contestResults = {'winner':this.opponent_2, 'loser':this.opponent_1,'timestamp':timestamp}
+         return contestResults = 'tie'
        }
+
+       md5(this.opponent_1) > md5(this.opponent_2) ? contestResults = {'winner':this.opponent_2, 'loser':this.opponent_1, 'timestamp':timestamp} : contestResults = {'winner':this.opponent_2, 'loser':this.opponent_1,'timestamp':timestamp};
        return contestResults;
     }
 
@@ -35,41 +33,44 @@ function Contest(opponent_1, opponent_2)  {
 
 
 
-const fight = () => {
+const main = () => {
   //shortcuts to DOM Elements
   var opponent_1 = document.getElementById('opponent_1').value
   var opponent_2 = document.getElementById('opponent_2').value
   var resultsDiv = document.getElementById('results')
-
-  //create a new contest object
-  const contest = new Contest(opponent_1, opponent_2)
-  const contestResults = contest.getResults();
   //make sure we have two opponents
-  if (!(contest.opponent_1) || !(contest.opponent_2)) {
+  if (!(opponent_1) || !(opponent_2)) {
     alert("we need two opponents")
     return false;
-  } else if (contestResults === 'tie'){
-    alert("it's a tie");
-    return false;
-  } else {
+  }
 
-  // Get a database reference
-  const contestsRef = firebase.database().ref('contests/');
+    //Get contest results
+    const contestResults = new Contest(opponent_1, opponent_2).getResults()
 
-  //write the contest to the database
+    if (contestResults === 'tie'){
+      alert("it's a tie");
+      return false;
+      } else {
 
-  contestsRef.push(contestResults);
+        // Get a database reference
+        const contestsRef = firebase.database().ref('contests/');
 
-  //get the contest from the datatabase and update UI
-  let resultsRef = firebase.database().ref('contests/').orderByChild('timestamp');
-  let resultsList =""
-   resultsRef.once('value')
-      .then(function(snapshot) {
-            snapshot.forEach (function(childSnapshot) {
-              var data = childSnapshot.val();
-              resultsList += "<div>timestamp: "+ data.timestamp + " winner: " + data.winner + "</div>"
-                          resultsDiv.innerHTML = resultsList;
-                        });
-          });
-   }
+        //write the contest to the database
+
+        contestsRef.push(contestResults);
+
+        //get the contest from the datatabase and update UI
+        let resultsRef = firebase.database().ref('contests/').orderByChild('timestamp');
+        let resultsList =""
+        resultsRef.once('value').then(function(snapshot) {
+                                snapshot.forEach (function(childSnapshot) {
+                                          var data = childSnapshot.val();
+                                          var timestamp = data.timestamp
+                                          var winner = data.winner.replace(/(<([^>]+)>)/ig,"");
+
+                                          resultsList += "<div>timestamp: "+ timestamp + " winner: " + winner + "</div>"
+                                          resultsDiv.innerHTML = resultsList;
+                                });
+         });
+       }
 }

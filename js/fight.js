@@ -24,7 +24,7 @@ function Contest(opponent_1, opponent_2)  {
          return contestResults = 'tie'
        }
 
-       md5(this.opponent_1) > md5(this.opponent_2) ? contestResults = {'winner':this.opponent_2, 'loser':this.opponent_1, 'timestamp':timestamp} : contestResults = {'winner':this.opponent_2, 'loser':this.opponent_1,'timestamp':timestamp};
+       md5(this.opponent_1) > md5(this.opponent_2) ? contestResults = {'winner':this.opponent_1, 'loser':this.opponent_2, 'timestamp':timestamp} : contestResults = {'winner':this.opponent_2, 'loser':this.opponent_1,'timestamp':timestamp};
        return contestResults;
     }
 

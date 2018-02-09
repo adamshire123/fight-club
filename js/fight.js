@@ -14,63 +14,82 @@ var config = {
 };
 firebase.initializeApp(config);
 
-function Contest(opponent_1, opponent_2)  {
-    this.opponent_1 = opponent_1;
-    this.opponent_2 = opponent_2;
-    this.getResults = function() {
-      let contestResults;
-      let timestamp = firebase.database.ServerValue.TIMESTAMP
-      if (this.opponent_1 === this.opponent_2) {
-         return contestResults = 'tie'
-       }
+function getContestResults(opponent_1, opponent_2)  {
 
-       md5(this.opponent_1) > md5(this.opponent_2) ? contestResults = {'winner':this.opponent_1, 'loser':this.opponent_2, 'timestamp':timestamp} : contestResults = {'winner':this.opponent_2, 'loser':this.opponent_1,'timestamp':timestamp};
-       return contestResults;
+    let timestamp = firebase.database.ServerValue.TIMESTAMP;
+    var results;
+    if (md5(opponent_1.value) > md5(opponent_2.value))  {
+
+    //  opponent_1.classList.add("winner");
+    var  contestResults =  {
+                'winner':opponent_1.value,
+                'loser':opponent_2.value,
+                'timestamp':timestamp
+              };
+    } else {
+      //opponent_2.classList.add("winner");
+      contestResults =  {
+                'winner':opponent_2.value,
+                'loser':opponent_1.value,
+                'timestamp':timestamp
+                };
+
     }
+      return contestResults;
+}
 
-  }
-
-
-
-
-const main = () => {
-  //shortcuts to DOM Elements
-  var opponent_1 = document.getElementById('opponent_1').value
-  var opponent_2 = document.getElementById('opponent_2').value
-  var resultsDiv = document.getElementById('results')
-  //make sure we have two opponents
-  if (!(opponent_1) || !(opponent_2)) {
+function checkOpponents(opponent_1, opponent_2)
+{
+  if (!opponent_1.value || !opponent_2.value) { //require two opponents
     alert("we need two opponents")
+    return false;
+  } else if (opponent_1.value === opponent_2.value) {  // if it's a tie don't save it to the database
+      alert("it's a tie")
+    return false;
+  } else {
+    return true;
+  }
+}
+
+function main() {
+  //shortcuts to DOM Elements
+  var opponent_1 = document.getElementById('opponent_1')
+  var opponent_2 = document.getElementById('opponent_2')
+
+// before we go any furtner, make sure we have two different opponents
+  if (!checkOpponents(opponent_1,opponent_2)) {
     return false;
   }
 
     //Get contest results
-    const contestResults = new Contest(opponent_1, opponent_2).getResults()
+    contestResults = getContestResults(opponent_1, opponent_2)
+    const contestsRef = firebase.database().ref(); // get a ref to the database
+    contestsRef.push(contestResults); // push contest results to the database
+    showResults();
+    opponent_1.value = "";
+    opponent_2.value = "";
+    opponent_1.focus()
 
-    if (contestResults === 'tie'){
-      alert("it's a tie");
-      return false;
-      } else {
-
-        // Get a database reference
-        const contestsRef = firebase.database().ref('contests/');
-
-        //write the contest to the database
-
-        contestsRef.push(contestResults);
-
-        //get the contest from the datatabase and update UI
-        let resultsRef = firebase.database().ref('contests/').orderByChild('timestamp');
-        let resultsList =""
-        resultsRef.once('value').then(function(snapshot) {
-                                snapshot.forEach (function(childSnapshot) {
-                                          var data = childSnapshot.val();
-                                          var timestamp = data.timestamp
-                                          var winner = data.winner.replace(/(<([^>]+)>)/ig,"");
-
-                                          resultsList += "<div>timestamp: "+ timestamp + " winner: " + winner + "</div>"
-                                          resultsDiv.innerHTML = resultsList;
-                                });
-         });
-       }
 }
+    //set up listener to display results
+    function showResults() {
+      const resultsDiv = document.getElementById('results')
+
+      let resultsRef = firebase.database().ref().limitToLast(5);
+        let resultsList =""
+        resultsRef.once('value', function(snapShot) {
+          console.log(snapShot)
+          snapShot.forEach (function(data){
+
+
+          var contest = data.val()
+          var timestamp = contest.timestamp
+          var winner = contest.winner.replace(/(<([^>]+)>)/ig,"");
+          var loser = contest.loser.replace(/(<([^>]+)>)/ig,"");
+          resultsList = "<div>" + winner + " is better than " + loser + "</div>" + resultsList
+          resultsDiv.innerHTML = resultsList;
+            });
+        });
+
+
+  }
